@@ -1,20 +1,16 @@
-import Hello from "./components/hello/hello";
 import * as io from "socket.io-client";
+import DataI from "../lib/data";
 
-Hello.render();
-console.log("hello world");
-
-const socket = io("http://localhost:8000");
-
-console.log(socket);
+const socket = io("http://localhost:9000");
 
 socket.on(
   "connect",
   (): void => {
     socket.on(
-      "welcome",
-      (message: string): void => {
-        console.log("rcv: " + message);
+      "messageFromServer",
+      (dataFromServer: DataI): void => {
+        console.log(dataFromServer.data);
+        socket.emit("messageToServer", { data: "Data from client" });
       }
     );
     socket.emit("message", { data: "thanks" });

@@ -4,8 +4,6 @@ import * as http from "http";
 import DataI from "../lib/data";
 const app = express();
 
-console.log(__dirname);
-
 app.use(express.static(__dirname));
 
 const expressServer: http.Server = app.listen(9000);
@@ -14,11 +12,21 @@ const io: socketio.Server = socketio(expressServer, { serveClient: false });
 io.of("/").on(
   "connection",
   (socket: socketio.Socket): void => {
-    socket.emit("welcome", { data: "Welcome to root namespace" });
+    socket.emit("server", { data: "Welcome to root namespace" });
     socket.on(
-      "welcome",
+      "server",
       (dataFromClient: DataI): void => {
         console.log(dataFromClient.data);
+      }
+    );
+    socket.join(
+      "level1",
+      (): void => {
+        io.of("/")
+          .to("level1")
+          .emit("joined", {
+            data: `${socket.id} has joined level1 room`
+          });
       }
     );
 
@@ -37,9 +45,9 @@ io.of("/").on(
 io.of("/admin").on(
   "connection",
   (socket: socketio.Socket): void => {
-    io.of("/admin").emit("welcome", { data: "Welcome to admin namespace" });
+    io.of("/admin").emit("server", { data: "Welcome to admin namespace" });
     socket.on(
-      "welcome",
+      "server",
       (dataFromClient: DataI): void => {
         console.log(dataFromClient.data);
       }

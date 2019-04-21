@@ -3,36 +3,29 @@ import DataI from "../lib/data";
 
 import "./main.scss";
 
-const rootNS = io("http://localhost:9000");
-const adminNS = io("http://localhost:9000/admin");
+const rootNS: SocketIOClient.Socket = io("http://localhost:9000");
+const adminNS: SocketIOClient.Socket = io("http://localhost:9000/admin");
 
 rootNS.on(
-  "connect",
-  (): void => {
-    console.log(rootNS.id);
-  }
-);
-
-adminNS.on(
-  "connect",
-  (): void => {
-    console.log(adminNS.id);
+  "server",
+  (dataFromServer: DataI): void => {
+    console.log(dataFromServer.data);
+    rootNS.emit("server", { data: `ack: ${dataFromServer.data}` });
   }
 );
 
 rootNS.on(
-  "welcome",
-  (dataFromServer: DataI): void => {
-    console.log(dataFromServer.data);
-    rootNS.emit("welcome", { data: `ack: ${dataFromServer.data}` });
+  "joined",
+  (msg: DataI): void => {
+    console.log(msg.data);
   }
 );
 
 adminNS.on(
-  "welcome",
+  "server",
   (dataFromServer: DataI): void => {
     console.log(dataFromServer.data);
-    adminNS.emit("welcome", { data: `ack: ${dataFromServer.data}` });
+    adminNS.emit("server", { data: `ack: ${dataFromServer.data}` });
   }
 );
 

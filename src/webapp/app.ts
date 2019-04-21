@@ -3,28 +3,46 @@ import DataI from "../lib/data";
 
 import "./main.scss";
 
-const socket = io("http://localhost:9000");
+const rootNS = io("http://localhost:9000");
+const adminNS = io("http://localhost:9000/admin");
 
-socket.on(
+rootNS.on(
   "connect",
   (): void => {
-    socket.on(
-      "welcome",
-      (dataFromServer: DataI): void => {
-        console.log(dataFromServer.data);
-        socket.emit("welcome", { data: `ack: ${dataFromServer.data}` });
-      }
-    );
+    console.log(rootNS.id);
+  }
+);
 
-    socket.on(
-      "chat",
-      (message: DataI): void => {
-        const messagesEl = document.querySelector("#messages");
-        if (messagesEl != null) {
-          messagesEl.innerHTML += `<li>${message.data}</li>`;
-        }
-      }
-    );
+adminNS.on(
+  "connect",
+  (): void => {
+    console.log(adminNS.id);
+  }
+);
+
+rootNS.on(
+  "welcome",
+  (dataFromServer: DataI): void => {
+    console.log(dataFromServer.data);
+    rootNS.emit("welcome", { data: `ack: ${dataFromServer.data}` });
+  }
+);
+
+adminNS.on(
+  "welcome",
+  (dataFromServer: DataI): void => {
+    console.log(dataFromServer.data);
+    adminNS.emit("welcome", { data: `ack: ${dataFromServer.data}` });
+  }
+);
+
+rootNS.on(
+  "chat",
+  (message: DataI): void => {
+    const messagesEl = document.querySelector("#messages");
+    if (messagesEl != null) {
+      messagesEl.innerHTML += `<li>${message.data}</li>`;
+    }
   }
 );
 
@@ -39,7 +57,7 @@ if (messageFormEl != null) {
       ) as HTMLInputElement;
       if (userMessageEl != null) {
         const message = userMessageEl.value;
-        socket.emit("chat", { data: message });
+        rootNS.emit("chat", { data: message });
       }
     }
   );

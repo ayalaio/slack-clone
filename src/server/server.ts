@@ -11,10 +11,10 @@ app.use(express.static(__dirname));
 const expressServer: http.Server = app.listen(9000);
 const io: socketio.Server = socketio(expressServer, { serveClient: false });
 
-io.on(
+io.of("/").on(
   "connection",
   (socket: socketio.Socket): void => {
-    socket.emit("welcome", { data: "Welcome to socketio server" });
+    socket.emit("welcome", { data: "Welcome to root namespace" });
     socket.on(
       "welcome",
       (dataFromClient: DataI): void => {
@@ -27,8 +27,21 @@ io.on(
       (message: DataI): void => {
         console.log(`client says: ${message.data}`);
         console.log(io.sockets.sockets);
-        // check this says io, not socket
-        io.emit("chat", message);
+        // check this it says io, not socket
+        io.of("/").emit("chat", message);
+      }
+    );
+  }
+);
+
+io.of("/admin").on(
+  "connection",
+  (socket: socketio.Socket): void => {
+    io.of("/admin").emit("welcome", { data: "Welcome to admin namespace" });
+    socket.on(
+      "welcome",
+      (dataFromClient: DataI): void => {
+        console.log(dataFromClient.data);
       }
     );
   }

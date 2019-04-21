@@ -9,16 +9,26 @@ console.log(__dirname);
 app.use(express.static(__dirname));
 
 const expressServer: http.Server = app.listen(9000);
-const io = socketio(expressServer, { serveClient: false });
+const io: socketio.Server = socketio(expressServer, { serveClient: false });
 
 io.on(
   "connection",
   (socket: socketio.Socket): void => {
-    socket.emit("messageFromServer", { data: "Welcome to socketio server" });
+    socket.emit("welcome", { data: "Welcome to socketio server" });
     socket.on(
-      "messageToServer",
+      "welcome",
       (dataFromClient: DataI): void => {
         console.log(dataFromClient.data);
+      }
+    );
+
+    socket.on(
+      "chat",
+      (message: DataI): void => {
+        console.log(`client says: ${message.data}`);
+        console.log(io.sockets.sockets);
+        // check this says io, not socket
+        io.emit("chat", message);
       }
     );
   }

@@ -10,6 +10,7 @@ module.exports = {
   entry: {
     server: "./src/server/server.ts"
   },
+  devtool: "inline-source-map",
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "./dist"),

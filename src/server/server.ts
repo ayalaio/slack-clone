@@ -1,13 +1,17 @@
 import * as express from "express";
 import * as socketio from "socket.io";
 import * as http from "http";
-import DataI from "../lib/data";
+import DataI from "../lib/interfaces/data";
+import Namespace from "../lib/models/Namespace";
+import namespaces from "../lib/data/namespaces";
 const app = express();
 
 app.use(express.static(__dirname));
 
 const expressServer: http.Server = app.listen(9000);
 const io: socketio.Server = socketio(expressServer, { serveClient: false });
+
+console.log(namespaces);
 
 io.of("/").on(
   "connection",

@@ -17,6 +17,9 @@ module.exports = {
     publicPath: ""
   },
   target: "node",
+  resolve: {
+    extensions: ["*", ".ts", ".tsx", ".js"]
+  },
   externals: [nodeExternals(), /src\/webapp/],
   node: {
     // Need this when working with express, otherwise the build fails
@@ -27,9 +30,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: "ts-loader",
-        include: [/src\/server/]
+        test: /.*\.tsx?$/,
+        use: "ts-loader"
       }
     ]
   },

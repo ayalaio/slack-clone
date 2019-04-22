@@ -1,6 +1,7 @@
 import * as io from "socket.io-client";
-import DataI from "../lib/data";
+import DataI from "../lib/interfaces/data";
 
+import "webpack-icons-installer";
 import "./main.scss";
 
 const rootNS: SocketIOClient.Socket = io("http://localhost:9000");

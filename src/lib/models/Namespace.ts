@@ -1,11 +1,12 @@
 import Room from "./Room";
+import NamespaceI from "../interfaces/NamespaceI";
 
-export default class Namespace {
+export default class Namespace implements NamespaceI {
   public readonly id: number;
   public readonly nsTitle: string;
   public readonly img: string;
   public readonly endPoint: string;
-  private rooms: Room[];
+  private _rooms: Room[];
 
   public constructor(
     id: number,
@@ -17,10 +18,23 @@ export default class Namespace {
     this.img = img;
     this.nsTitle = nsTitle;
     this.endPoint = endPoint;
-    this.rooms = [];
+    this._rooms = [];
   }
 
   public addRoom(room: Room): void {
-    this.rooms.push(room);
+    this._rooms.push(room);
+  }
+
+  public get rooms(): Room[] {
+    return [...this._rooms];
+  }
+
+  public asInterface(): NamespaceI {
+    return {
+      id: this.id,
+      img: this.img,
+      nsTitle: this.nsTitle,
+      endPoint: this.endPoint
+    };
   }
 }

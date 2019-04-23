@@ -1,9 +1,11 @@
-export default class Room {
+import RoomI from "../interfaces/RoomI";
+
+export default class Room implements RoomI {
   public readonly id: number;
   public readonly title: string;
   public readonly namespace: string;
   public readonly isPrivate: boolean;
-  private history: string[];
+  private _history: string[];
   public constructor(
     id: number,
     title: string,
@@ -14,14 +16,27 @@ export default class Room {
     this.title = title;
     this.namespace = namespace;
     this.isPrivate = isPrivate;
-    this.history = [];
+    this._history = [];
   }
 
   public addMessage(message: string): void {
-    this.history.push(message);
+    this._history.push(message);
   }
 
   public clearHistory(): void {
-    this.history = [];
+    this._history = [];
+  }
+
+  public get history(): string[] {
+    return [...this._history];
+  }
+
+  public asInterface(): RoomI {
+    return {
+      id: this.id,
+      title: this.title,
+      namespace: this.namespace,
+      isPrivate: this.isPrivate
+    };
   }
 }

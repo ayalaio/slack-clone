@@ -5,6 +5,7 @@ import namespaces from "../lib/data/namespaces";
 import Namespace from "../lib/models/Namespace";
 import Room from "../lib/models/Room";
 import NamespaceI from "../lib/interfaces/NamespaceI";
+import MessageI from "../lib/interfaces/MessageI";
 
 const app = express();
 
@@ -44,12 +45,14 @@ namespaces.forEach(
 
         socket.on(
           "message",
-          (message: { text: string; roomId: string }): void => {
+          (message: MessageI): void => {
             const room: Room = ns.rooms[parseInt(message.roomId)];
-            room.addMessage(message.text);
+            message.date = new Date();
+            message.username = "davidrod";
+            room.addMessage(message);
             io.of(ns.endPoint)
               .to(message.roomId)
-              .emit("message", message.text);
+              .emit("message", message);
           }
         );
 
@@ -65,10 +68,16 @@ namespaces.forEach(
               roomId,
               (): void => {
                 io.of(ns.endPoint)
-                  .to(roomId)
-                  .emit(
-                    "joined",
-                    `${socket.id} has joined ${room.title} of ${ns.endPoint}`
+                  .in(roomId)
+                  .clients(
+                    (e: Error, clients: string[]): void => {
+                      io.of(ns.endPoint)
+                        .to(roomId)
+                        .emit("joined", {
+                          name: room.title,
+                          size: clients.length
+                        });
+                    }
                   );
               }
             );

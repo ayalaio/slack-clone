@@ -4,13 +4,15 @@ import "webpack-icons-installer";
 import "./main.scss";
 import Namespace from "../lib/models/Namespace";
 import NamespaceI from "../lib/interfaces/NamespaceI";
-import Room from "../lib/models/Room";
 import RoomI from "../lib/interfaces/RoomI";
+import MessageI from "../lib/interfaces/MessageI";
 import SocketPool from "./components/SocketPool";
 
 const socketPool: SocketPool = new SocketPool("http://localhost:9000");
 
 const rootSocket: SocketIOClient.Socket = socketPool.connectNamespace("/");
+
+let currentRoomId: number | null = null;
 
 function cleanChat(): void {
   const messagesEl = document.querySelector("#messages");
@@ -19,18 +21,24 @@ function cleanChat(): void {
   }
 }
 
-function addMessage(message: string): void {
+function addMessage(message: MessageI): void {
   const messagesEl = document.querySelector("#messages");
+
   if (messagesEl != null) {
-    messagesEl.innerHTML += `<li>
-                  <div class="user-image">
-                    <img src="https://via.placeholder.com/50" />
-                  </div>
-                  <div class="user-message">
-                    <div class="user-name-time">rbunch <span>1:25 pm</span></div>
-                    <div class="message-text">${message}</div>
-                  </div>
-                </li>`;
+    let m = `<li>
+    <div class="user-image">
+      <img src="https://via.placeholder.com/50" />
+    </div>
+    <div class="user-message">
+      <div class="user-name-time">${message.username} <span>${
+      message.date
+    }</span></div>
+      <div class="message-text">${message.text}</div>
+    </div>
+  </li>`;
+
+    messagesEl.innerHTML += m;
+    messagesEl.scrollTo(0, messagesEl.scrollHeight);
   }
 }
 
@@ -65,10 +73,10 @@ function setClickEventOnRooms(): void {
           if (!currentSocket.hasListeners("setChat")) {
             currentSocket.on(
               "setChat",
-              (roomHistory: string[]): void => {
+              (roomHistory: MessageI[]): void => {
                 cleanChat();
                 roomHistory.forEach(
-                  (message: string): void => {
+                  (message: MessageI): void => {
                     addMessage(message);
                   }
                 );
@@ -80,8 +88,19 @@ function setClickEventOnRooms(): void {
             currentSocket.on(
               "joined",
 
-              (message: string): void => {
-                console.log(message);
+              (roomDetails: { name: string; size: number }): void => {
+                let currRoomEl = document.querySelector(".curr-room-text");
+                if (currRoomEl != null) {
+                  currRoomEl.innerHTML = roomDetails.name;
+                }
+                let currRoomNumEl = document.querySelector(
+                  ".curr-room-num-users"
+                );
+                if (currRoomNumEl != null) {
+                  currRoomNumEl.innerHTML = `${
+                    roomDetails.size
+                  } Users<span class="glyphicon glyphicon-user"></span>`;
+                }
               }
             );
           }
@@ -89,32 +108,16 @@ function setClickEventOnRooms(): void {
           if (!currentSocket.hasListeners("message")) {
             currentSocket.on(
               "message",
-              (message: string): void => {
+              (message: MessageI): void => {
                 addMessage(message);
               }
             );
           }
 
           currentSocket.emit("join", el.getAttribute("roomId"));
-
-          const formEl = document.querySelector("#message-form") as HTMLElement;
-          var formEl2 = formEl.cloneNode(true);
-          if (formEl != null && formEl.parentNode) {
-            formEl.parentNode.replaceChild(formEl2, formEl);
-            formEl2.addEventListener("submit", function(e: Event): void {
-              e.preventDefault();
-              const textEl = document.querySelector(
-                "#user-message"
-              ) as HTMLInputElement;
-              const text = textEl.value;
-              let cs = currentSocket;
-              if (cs != null) {
-                cs.emit("message", {
-                  text: text,
-                  roomId: el.getAttribute("roomId")
-                });
-              }
-            });
+          let n = el.getAttribute("roomId");
+          if (n != null) {
+            currentRoomId = parseInt(n);
           }
         }
       );
@@ -190,3 +193,20 @@ rootSocket.on(
     clickFirstNamespace();
   }
 );
+
+const formEl = document.querySelector("#message-form") as HTMLElement;
+if (formEl != null && formEl.parentNode) {
+  formEl.addEventListener("submit", function(e: Event): void {
+    e.preventDefault();
+    const textEl = document.querySelector("#user-message") as HTMLInputElement;
+    const text = textEl.value;
+    textEl.value = "";
+    let cs = socketPool.currentSocket;
+    if (cs != null) {
+      cs.emit("message", {
+        text: text,
+        roomId: currentRoomId
+      });
+    }
+  });
+}

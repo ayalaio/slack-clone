@@ -1,11 +1,12 @@
 import RoomI from "../interfaces/RoomI";
+import MessageI from "../interfaces/MessageI";
 
 export default class Room implements RoomI {
   public readonly id: number;
   public readonly title: string;
   public readonly namespace: string;
   public readonly isPrivate: boolean;
-  private _history: string[];
+  private _history: MessageI[];
   public constructor(
     id: number,
     title: string,
@@ -19,7 +20,7 @@ export default class Room implements RoomI {
     this._history = [];
   }
 
-  public addMessage(message: string): void {
+  public addMessage(message: MessageI): void {
     this._history.push(message);
   }
 
@@ -27,7 +28,7 @@ export default class Room implements RoomI {
     this._history = [];
   }
 
-  public get history(): string[] {
+  public get history(): MessageI[] {
     return [...this._history];
   }
 

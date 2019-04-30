@@ -1,5 +1,3 @@
-import * as io from "socket.io-client";
-
 import "webpack-icons-installer";
 import "./main.scss";
 import Namespace from "../lib/models/Namespace";
@@ -8,7 +6,11 @@ import RoomI from "../lib/interfaces/RoomI";
 import MessageI from "../lib/interfaces/MessageI";
 import SocketPool from "./components/SocketPool";
 
-const socketPool: SocketPool = new SocketPool("http://localhost:9000");
+const username = prompt("What is your username?") || "anonymous";
+const socketPool: SocketPool = new SocketPool(
+  "http://localhost:9000",
+  username
+);
 
 const rootSocket: SocketIOClient.Socket = socketPool.connectNamespace("/");
 

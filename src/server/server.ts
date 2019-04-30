@@ -48,7 +48,7 @@ namespaces.forEach(
           (message: MessageI): void => {
             const room: Room = ns.rooms[parseInt(message.roomId)];
             message.date = new Date();
-            message.username = "davidrod";
+            message.username = socket.handshake.query.username;
             room.addMessage(message);
             io.of(ns.endPoint)
               .to(message.roomId)
